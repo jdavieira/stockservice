@@ -32,18 +32,27 @@ public class CreateStockRequestProducer {
         this.jobScheduler = jobScheduler;
     }
 
-    @Retry(name = "unstableKafkaService", fallbackMethod ="retrySendStockRequestEvent")
-    @Job(name = "test", retries = 2)
+    @Retry(name = "unstableKafkaService", fallbackMethod = "retrySendStockRequestEvent")
     public void sendStockRequestEvent(BookStockRequestEvent bookStockRequestEvent) throws JsonProcessingException, ExecutionException, InterruptedException {
 
-        ObjectMapper objectMapper = null;
-        producer.sendMessage(createStockRequestTopic, objectMapper.writeValueAsString(bookStockRequestEvent));
-        logger.info("Stock request event message produced.");
+        this.produceStockRequestEvent(bookStockRequestEvent);
     }
 
-    public void retrySendStockRequestEvent(BookStockRequestEvent bookStockRequestEvent, Exception t){
-        logger.warn("Enqueuing BookStockRequestEvent message");
+    @Job(name = "Produce Stock Request Event ", retries = 2)
+    public void retrySendStockRequestEvent(BookStockRequestEvent bookStockRequestEvent, Exception t) {
 
-        jobScheduler.schedule(bookStockRequestEvent.messageId, Instant.now().plusSeconds(20), () -> this.sendStockRequestEvent(bookStockRequestEvent));
+        logger.warn("Enqueuing BookStockRequestEvent message");
+        try {
+            this.produceStockRequestEvent(bookStockRequestEvent);
+        } catch (Exception ex) {
+            jobScheduler.schedule(Instant.now().plusSeconds(20), () -> this.produceStockRequestEvent(bookStockRequestEvent));
+        }
+    }
+
+    private void produceStockRequestEvent(BookStockRequestEvent bookStockRequestEvent) throws ExecutionException, InterruptedException, JsonProcessingException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        producer.sendMessage(createStockRequestTopic, objectMapper.writeValueAsString(bookStockRequestEvent));
+        logger.info("Stock request event message produced.");
     }
 }
