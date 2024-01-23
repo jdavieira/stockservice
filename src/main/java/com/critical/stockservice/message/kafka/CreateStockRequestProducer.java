@@ -38,7 +38,7 @@ public class CreateStockRequestProducer {
         this.produceStockRequestEvent(bookStockRequestEvent);
     }
 
-    @Job(name = "Produce Stock Request Event ", retries = 2)
+
     public void retrySendStockRequestEvent(BookStockRequestEvent bookStockRequestEvent, Exception t) {
 
         logger.warn("Enqueuing BookStockRequestEvent message");
@@ -49,6 +49,7 @@ public class CreateStockRequestProducer {
         }
     }
 
+    @Job(name = "Produce Stock Request Event ", retries = 2)
     private void produceStockRequestEvent(BookStockRequestEvent bookStockRequestEvent) throws ExecutionException, InterruptedException, JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
