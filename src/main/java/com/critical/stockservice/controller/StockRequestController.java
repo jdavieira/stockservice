@@ -7,6 +7,7 @@ import com.critical.stockservice.service.StockRequestService;
 import com.critical.stockservice.util.exception.EntityNullException;
 import com.critical.stockservice.util.exception.SaveEntityDataIntegrityViolationException;
 import com.critical.stockservice.util.exception.SaveEntityException;
+import com.critical.stockservice.util.validation.EmailValidation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -91,6 +92,12 @@ public class StockRequestController {
                     {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})})
     @PostMapping("/stockRequest")
     public ResponseEntity createStockRequests(@Valid @RequestBody StockRequestDto request) {
+        if(EmailValidation.isEmailInvalid(request.userEmail)){
+            return  ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Email format is invalid"));
+        }
+
         try {
             this.service.createStockRequest(request);
             return ResponseEntity.ok().build();
@@ -120,6 +127,12 @@ public class StockRequestController {
                     {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})})
     @PostMapping("/stockRequestFulfilled")
     public ResponseEntity createStockRequestFulfilled(@Valid @RequestBody StockRequestFulfilled request) {
+        if(EmailValidation.isEmailInvalid(request.userEmail)){
+            return  ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Email format is invalid"));
+        }
+
         try {
             this.service.createStockRequestFulfilled(request);
             return ResponseEntity.ok().build();

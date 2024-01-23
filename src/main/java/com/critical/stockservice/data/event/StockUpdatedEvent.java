@@ -1,5 +1,6 @@
 package com.critical.stockservice.data.event;
 
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,5 +15,6 @@ public class StockUpdatedEvent {
 
     public int stock;
 
+    @Email
     public String userEmail;
 }
