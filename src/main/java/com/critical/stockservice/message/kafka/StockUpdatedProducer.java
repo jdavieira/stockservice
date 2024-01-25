@@ -1,6 +1,7 @@
 package com.critical.stockservice.message.kafka;
 
 import com.critical.stockservice.data.event.StockUpdatedEvent;
+import com.critical.stockservice.service.StockRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -21,13 +22,16 @@ public class StockUpdatedProducer {
 
     private final JobScheduler jobScheduler;
 
+    private final StockRequestService service;
+
     @Value("${kafka.producer.topic.stock-updated-request}")
     private String stockUpdateRequestTopic;
 
-    public StockUpdatedProducer(MessageProducer producer, JobScheduler jobScheduler) {
+    public StockUpdatedProducer(MessageProducer producer, JobScheduler jobScheduler, StockRequestService service) {
 
         this.producer = producer;
         this.jobScheduler = jobScheduler;
+        this.service = service;
     }
 
     @Retry(name = "unstableKafkaService", fallbackMethod = "retrySendStockUpdatedEvent")
@@ -48,7 +52,7 @@ public class StockUpdatedProducer {
         }
     }
 
-    private void createStockUpdateRequest(StockUpdatedEvent stockUpdatedEvent) {
-        //TODO:: Add http request
+    private void createStockUpdateRequest(StockUpdatedEvent stockUpdatedEvent) throws Exception {
+        this.service.sendNotificationRequest(stockUpdatedEvent);
     }
 }

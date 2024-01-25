@@ -11,6 +11,9 @@ import java.util.List;
 @Repository
 public interface StockRequestRepository extends JpaRepository<StockRequest, Integer> {
 
+    @Query(value = "SELECT DISTINCT s FROM StockRequest s WHERE s.stock.bookId = :bookId AND s.userEmail = :email")
+    List<StockRequest> findStockRequestByBookIdAndUserEmail(@Param("bookId") int bookId, @Param("email") String email);
+
     @Query(value = "SELECT DISTINCT s FROM StockRequest s WHERE s.stock.bookId = :bookId")
     List<StockRequest> findStockRequestByBookId(@Param("bookId") int bookId);
 }

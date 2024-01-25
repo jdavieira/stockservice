@@ -1,5 +1,6 @@
 package com.critical.stockservice.controller;
 
+import com.critical.stockservice.data.event.StockUpdatedEvent;
 import com.critical.stockservice.dtos.StockRequestDto;
 import com.critical.stockservice.dtos.StockRequestFulfilled;
 import com.critical.stockservice.dtos.error.ErrorResponse;
@@ -134,6 +135,14 @@ public class StockRequestController {
         }
 
         try {
+            this.service.sendNotificationRequest(new StockUpdatedEvent(0,1,"teste"));
+        }catch (Exception ex){
+
+        }
+
+        try {
+
+
             this.service.createStockRequestFulfilled(request);
             return ResponseEntity.ok().build();
         } catch (SaveEntityException | EntityNullException exception){
