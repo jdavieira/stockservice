@@ -1,6 +1,8 @@
 package com.critical.stockservice.message.rabbitMQ;
 
 import com.critical.stockservice.data.event.UpdateBookStockEvent;
+import com.critical.stockservice.message.kafka.StockUpdatedProducer;
+import com.critical.stockservice.service.StockRequestService;
 import com.critical.stockservice.service.StockService;
 import com.critical.stockservice.util.exception.SaveEntityException;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,6 +24,9 @@ public class BookStockRequestListener {
 
     @Autowired
     private StockService service;
+
+    @Autowired
+    private StockRequestService stockRequestService;
 
     @Autowired
     private JobScheduler jobScheduler;
@@ -46,6 +51,8 @@ public class BookStockRequestListener {
                     Instant.now().plusSeconds(60),
                     () -> service.upsertStock(event.bookId, event.stock));
         }
+
+        stockRequestService.sendNotification(event.bookId, event.stock);
 
         log.info("Update Book Stock Event finished: " + event.bookId + " - " + event.stock);
     }

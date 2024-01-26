@@ -1,5 +1,7 @@
 package com.critical.stockservice.service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,7 +25,7 @@ public class AuthService {
     public String getAccessToken() {
 
         String requestBody = "grant_type=client_credentials&client_id=" +
-                clientId+"client_secret="+clientSecret+"scope=write";
+                clientId+"&client_secret="+clientSecret+"&scope=write";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
@@ -32,6 +34,8 @@ public class AuthService {
                 request,
                 String.class);
 
-        return response.getBody();
+        JsonObject data = new Gson().fromJson(response.getBody(), JsonObject.class);
+
+        return data.get("access_token").getAsString();
     }
 }

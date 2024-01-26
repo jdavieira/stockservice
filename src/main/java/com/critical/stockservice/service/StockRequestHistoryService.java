@@ -28,7 +28,7 @@ public class StockRequestHistoryService {
         return StockRequestHistoryMapper.MAPPER.mapStockRequestsToStockRequestsDto(stockRequest);
     }
 
-    public StockRequestHistoryDto getStockRequestByBookId(int bookId) {
+    public List<StockRequestHistoryDto> getStockRequestByBookId(int bookId) {
 
         var stockRequest = this.repository.findStockRequestHistoryByBookId(bookId);
         if (null == stockRequest) {
@@ -36,6 +36,6 @@ public class StockRequestHistoryService {
             logger.warn(message);
             throw new EntityNotFoundException(message);
         }
-        return StockRequestHistoryMapper.MAPPER.mapStockRequestToStockRequestDto(stockRequest);
+        return StockRequestHistoryMapper.MAPPER.mapStockRequestsToStockRequestsDto(stockRequest);
     }
 }

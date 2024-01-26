@@ -22,16 +22,14 @@ public class StockUpdatedProducer {
 
     private final JobScheduler jobScheduler;
 
-    private final StockRequestService service;
 
     @Value("${kafka.producer.topic.stock-updated-request}")
     private String stockUpdateRequestTopic;
 
-    public StockUpdatedProducer(MessageProducer producer, JobScheduler jobScheduler, StockRequestService service) {
+    public StockUpdatedProducer(MessageProducer producer, JobScheduler jobScheduler) {
 
         this.producer = producer;
         this.jobScheduler = jobScheduler;
-        this.service = service;
     }
 
     @Retry(name = "unstableKafkaService", fallbackMethod = "retrySendStockUpdatedEvent")
@@ -46,13 +44,16 @@ public class StockUpdatedProducer {
 
         logger.warn("Enqueuing StockUpdatedEvent message");
         try {
-            this.createStockUpdateRequest(stockUpdatedEvent);
+            this.sendNotificationStockEvent(stockUpdatedEvent);
         } catch (Exception ex) {
-            this.jobScheduler.enqueue(() -> this.createStockUpdateRequest(stockUpdatedEvent));
+            this.jobScheduler.enqueue(() -> this.sendNotificationStockEvent(stockUpdatedEvent));
         }
     }
 
-    private void createStockUpdateRequest(StockUpdatedEvent stockUpdatedEvent) throws Exception {
-        this.service.sendNotificationRequest(stockUpdatedEvent);
+    public void sendNotificationStockEvent(StockUpdatedEvent stockUpdatedEvent) throws JsonProcessingException, ExecutionException, InterruptedException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        producer.sendMessage(stockUpdateRequestTopic, objectMapper.writeValueAsString(stockUpdatedEvent));
+        logger.info("Stock request event message produced.");
     }
 }

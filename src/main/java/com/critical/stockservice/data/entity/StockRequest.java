@@ -22,12 +22,12 @@ public class StockRequest {
     private int id;
 
     @Column(name = "stock_requested")
-    private int stockRequested;
+    private int stockRequest;
 
     @Column(name = "user_email")
     private String userEmail;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "stock_id", referencedColumnName = "stock_id")
     private Stock stock;
 

@@ -1,8 +1,12 @@
 package com.critical.stockservice.controller;
 
+import com.critical.stockservice.dtos.BookRequest;
 import com.critical.stockservice.dtos.StockDto;
 import com.critical.stockservice.dtos.error.ErrorResponse;
 import com.critical.stockservice.service.StockService;
+import com.critical.stockservice.util.exception.EntityNullException;
+import com.critical.stockservice.util.exception.SaveEntityDataIntegrityViolationException;
+import com.critical.stockservice.util.exception.SaveEntityException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,14 +15,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -74,5 +76,30 @@ public class StockController {
     }
 
 
-
+    @Operation
+    @ApiResponses({
+            @ApiResponse(responseCode = "200"),
+            @ApiResponse(responseCode = "403", content =
+                    {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "404", content =
+                    {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "500", content =
+                    {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})})
+    @PostMapping("/buyBook")
+    public ResponseEntity buyBook(@Valid @RequestBody BookRequest request){
+        try {
+            this.service.buyBook(request);
+            return ResponseEntity.ok().build();
+        } catch (SaveEntityException | EntityNullException exception){
+            logger.warn(exception.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), exception.getMessage()));
+        } catch (SaveEntityDataIntegrityViolationException exception){
+            logger.warn(exception.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), exception.getMessage()));
+        }
+    }
 }

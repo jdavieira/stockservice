@@ -133,16 +133,7 @@ public class StockRequestController {
                     .status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Email format is invalid"));
         }
-
         try {
-            this.service.sendNotificationRequest(new StockUpdatedEvent(0,1,"teste"));
-        }catch (Exception ex){
-
-        }
-
-        try {
-
-
             this.service.createStockRequestFulfilled(request);
             return ResponseEntity.ok().build();
         } catch (SaveEntityException | EntityNullException exception){
